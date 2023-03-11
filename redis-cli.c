@@ -56,7 +56,9 @@ static struct config {
 } config;
 
 struct redisCommand {
+    //命令名字
     char *name;
+    //参数个数
     int arity;
     int flags;
 };
@@ -300,6 +302,7 @@ static int selectDb(int fd) {
     anetWrite(fd,cmd,sdslen(cmd));
     anetRead(fd,&type,1);
     if (type <= 0 || type != '+') return 1;
+    //
     retval = cliReadSingleLineReply(fd,1);
     if (retval) {
         return retval;
@@ -323,7 +326,10 @@ static int cliSendCommand(int argc, char **argv) {
             fprintf(stderr,"Wrong number of arguments for '%s'\n",rc->name);
             return 1;
     }
+    int a = config.dbnum;
+    printf(a);
     if (!strcasecmp(rc->name,"monitor")) read_forever = 1;
+    //建立服务端连接 得到套接字
     if ((fd = cliConnect()) == -1) return 1;
 
     /* Select db number */
@@ -498,7 +504,9 @@ static void repl() {
     exit(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
+    //argment count  argments
+    //argment count  argments
     int firstarg;
     char **argvcopy;
     struct redisCommand *rc;

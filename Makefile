@@ -3,7 +3,7 @@
 # This file is released under the BSD license, see the COPYING file
 
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
-OPTIMIZATION?=-O2
+OPTIMIZATION?=-O0
 ifeq ($(uname_S),SunOS)
   CFLAGS?= -std=c99 -pedantic $(OPTIMIZATION) -Wall -W -D__EXTENSIONS__ -D_XPG6
   CCLINK?= -ldl -lnsl -lsocket -lm -lpthread
@@ -47,7 +47,7 @@ zipmap.o: zipmap.c zmalloc.h
 zmalloc.o: zmalloc.c config.h
 
 redis-server: $(OBJ)
-	$(CC) -o $(PRGNAME) $(CCOPT) $(DEBUG) $(OBJ)
+	$(CC) -o $(PRGNAME) $(DEBUG) $(OBJ) $(CCOPT)
 	@echo ""
 	@echo "Hint: To run the test-redis.tcl script is a good idea."
 	@echo "Launch the redis server with ./redis-server, then in another"
