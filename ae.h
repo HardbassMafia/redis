@@ -69,6 +69,7 @@ typedef struct aeFileEvent {
 } aeFileEvent;
 
 /* Time event structure */
+//链表结构
 typedef struct aeTimeEvent {
     long long id; /* time event identifier. */
     long when_sec; /* seconds */
@@ -87,7 +88,9 @@ typedef struct aeFiredEvent {
 
 /* State of an event based program */
 typedef struct aeEventLoop {
+    //目前已注册的最大fd
     int maxfd;
+    //定时事件？类似链表？
     long long timeEventNextId;
     aeFileEvent events[AE_SETSIZE]; /* Registered events */
     aeFiredEvent fired[AE_SETSIZE]; /* Fired events */
@@ -96,6 +99,14 @@ typedef struct aeEventLoop {
     void *apidata; /* This is used for polling API specific data */
     aeBeforeSleepProc *beforesleep;
 } aeEventLoop;
+//apidata就是：维护标准库层面的接口模型
+/*
+typedef struct aeApiState {
+    int epfd;
+    struct epoll_event events[AE_SETSIZE];
+} aeApiState;
+*/
+
 
 /* Prototypes */
 aeEventLoop *aeCreateEventLoop(void);
