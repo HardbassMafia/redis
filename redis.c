@@ -280,6 +280,7 @@ typedef struct redisObject {
 
 typedef struct redisDb {
     dict *dict;                 /* The keyspace for this DB */
+    //对于每个db，会对应维护一个过期时间的散列表
     dict *expires;              /* Timeout of keys with a timeout set */
     dict *blockingkeys;         /* Keys with clients waiting for data (BLPOP) */
     dict *io_keys;              /* Keys with clients waiting for VM I/O */
@@ -439,9 +440,13 @@ struct redisServer {
 
 typedef void redisCommandProc(redisClient *c);
 struct redisCommand {
+    //命令类型 get/set/setnx
     char *name;
+    //函数指针
     redisCommandProc *proc;
+    //参数个数
     int arity;
+    //
     int flags;
     /* Use a function to determine which keys need to be loaded
      * in the background prior to executing this command. Takes precedence
@@ -2071,6 +2076,7 @@ static void call(redisClient *c, struct redisCommand *cmd) {
  * if 0 is returned the client was destroied (i.e. after QUIT). */
 static int processCommand(redisClient *c) {
     struct redisCommand *cmd;
+    //
 
     /* Free some memory if needed (maxmemory setting) */
     if (server.maxmemory) freeMemoryIfNeeded();
@@ -2154,6 +2160,7 @@ static int processCommand(redisClient *c) {
      * such wrong arity, bad command name and so forth. */
     cmd = lookupCommand(c->argv[0]->ptr);
     if (!cmd) {
+        //非法命令
         addReplySds(c,
             sdscatprintf(sdsempty(), "-ERR unknown command '%s'\r\n",
                 (char*)c->argv[0]->ptr));
@@ -2161,6 +2168,7 @@ static int processCommand(redisClient *c) {
         return 1;
     } else if ((cmd->arity > 0 && cmd->arity != c->argc) ||
                (c->argc < -cmd->arity)) {
+        //参数个数不对
         addReplySds(c,
             sdscatprintf(sdsempty(),
                 "-ERR wrong number of arguments for '%s' command\r\n",
@@ -2168,6 +2176,7 @@ static int processCommand(redisClient *c) {
         resetClient(c);
         return 1;
     } else if (server.maxmemory && cmd->flags & REDIS_CMD_DENYOOM && zmalloc_used_memory() > server.maxmemory) {
+        //爆内存
         addReplySds(c,sdsnew("-ERR command not allowed when used memory > 'maxmemory'\r\n"));
         resetClient(c);
         return 1;
@@ -2746,7 +2755,7 @@ static robj *lookupKey(redisDb *db, robj *key) {
     if (de) {
         robj *key = dictGetEntryKey(de);
         robj *val = dictGetEntryVal(de);
-
+        //磁盘交换 对于不常用的键放到磁盘上
         if (server.vm_enabled) {
             if (key->storage == REDIS_VM_MEMORY ||
                 key->storage == REDIS_VM_SWAPPING)
@@ -9108,6 +9117,7 @@ static void daemonize(void) {
      * the 'logfile' is set to 'stdout' in the configuration file
      * it will not log at all. */
     if ((fd = open("/dev/null", O_RDWR, 0)) != -1) {
+        //会将原来的0，1，2的文件描述符关闭  原理：dup2方法，复制fd到var2中，如果var2处于打开的状态，则会关闭var2
         dup2(fd, STDIN_FILENO);
         dup2(fd, STDOUT_FILENO);
         dup2(fd, STDERR_FILENO);
