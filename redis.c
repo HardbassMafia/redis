@@ -1908,9 +1908,10 @@ static void sendReplyToClient(aeEventLoop *el, int fd, void *privdata, int mask)
     }
 
     while(listLength(c->reply)) {
-        if (server.glueoutputbuf && listLength(c->reply) > 1)
+        if (server.glueoutputbuf && listLength(c->reply) > 1){
             glueReplyBuffersIfNeeded(c);
-
+        }
+            
         o = listNodeValue(listFirst(c->reply));
         objlen = sdslen(o->ptr);
 
@@ -3745,7 +3746,7 @@ static void setGenericCommand(redisClient *c, int nx) {
             if (server.vm_enabled && deleteIfSwapped(c->db,c->argv[1]))
                 incrRefCount(c->argv[1]);
             dictReplace(c->db->dict,c->argv[1],c->argv[2]);
-            incrRefCount(c->argv[2]);
+              incrRefCount(c->argv[2]);
         } else {
             addReply(c,shared.czero);
             return;
