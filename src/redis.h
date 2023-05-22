@@ -593,6 +593,7 @@ struct redisServer {
     int sofd;                   /* Unix socket file descriptor */
     list *clients;              /* List of active clients */
     list *clients_to_close;     /* Clients to close asynchronously */
+    //slave是否会重复
     list *slaves, *monitors;    /* List of slaves and MONITORs */
     redisClient *current_client; /* Current client, only used on crash report */
     char neterr[ANET_ERR_LEN];  /* Error buffer for anet.c */
@@ -690,6 +691,7 @@ struct redisServer {
     long long repl_backlog_size;    /* Backlog circular buffer size */
     long long repl_backlog_histlen; /* Backlog actual data length */
     long long repl_backlog_idx;     /* Backlog circular buffer current offset */
+    //where vaild data started
     long long repl_backlog_off;     /* Replication offset of first byte in the
                                        backlog buffer. */
     time_t repl_backlog_time_limit; /* Time without slaves after the backlog

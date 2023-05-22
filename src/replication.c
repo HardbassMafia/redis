@@ -339,6 +339,7 @@ int masterTryPartialResynchronization(redisClient *c) {
     /* Is the runid of this master the same advertised by the wannabe slave
      * via PSYNC? If runid changed this master is a different instance and
      * there is no way to continue. */
+    //判断是否是同一个master
     if (strcasecmp(master_runid, server.runid)) {
         /* Run id "?" is used by slaves that want to force a full resync. */
         if (master_runid[0] != '?') {
@@ -351,6 +352,7 @@ int masterTryPartialResynchronization(redisClient *c) {
         goto need_full_resync;
     }
 
+    //校验同步offset是否合法：offset是否在当前master的offset
     /* We still have the data our slave is asking for? */
     if (getLongLongFromObjectOrReply(c,c->argv[2],&psync_offset,NULL) !=
        REDIS_OK) goto need_full_resync;
@@ -466,6 +468,7 @@ void syncCommand(redisClient *c) {
 
     /* Here we need to check if there is a background saving operation
      * in progress, or if it is required to start one */
+    // rbd会拉一个线程出来做rbd
     if (server.rdb_child_pid != -1) {
         /* Ok a background save is in progress. Let's check if it is a good
          * one for replication, i.e. if there is another slave that is
@@ -511,6 +514,7 @@ void syncCommand(redisClient *c) {
     server.slaveseldb = -1; /* Force to re-emit the SELECT command. */
     listAddNodeTail(server.slaves,c);
     if (listLength(server.slaves) == 1 && server.repl_backlog == NULL)
+    //创建同步缓冲区
         createReplicationBacklog();
     return;
 }
@@ -1486,8 +1490,8 @@ void replicationCron(void) {
         (time(NULL)-server.repl_transfer_lastio) > server.repl_timeout)
     {
         redisLog(REDIS_WARNING,"Timeout receiving bulk data from MASTER... If the problem persists try to set the 'repl-timeout' parameter in redis.conf to a larger value.");
-        replicationAbortSyncTransfer();
     }
+        replicationAbortSyncTransfer();
 
     /* Timed out master when we are an already connected slave? */
     if (server.masterhost && server.repl_state == REDIS_REPL_CONNECTED &&
