@@ -54,6 +54,7 @@ typedef enum {
 typedef void (*ConnectionCallbackFunc)(struct connection *conn);
 
 typedef struct ConnectionType {
+    //连接
     void (*ae_handler)(struct aeEventLoop *el, int fd, void *clientData, int mask);
     int (*connect)(struct connection *conn, const char *addr, int port, const char *source_addr, ConnectionCallbackFunc connect_handler);
     int (*write)(struct connection *conn, const void *data, size_t data_len);
@@ -116,6 +117,7 @@ static inline int connAccept(connection *conn, ConnectionCallbackFunc accept_han
  */
 static inline int connConnect(connection *conn, const char *addr, int port, const char *src_addr,
         ConnectionCallbackFunc connect_handler) {
+            //set type
     return conn->type->connect(conn, addr, port, src_addr, connect_handler);
 }
 

@@ -345,6 +345,11 @@ static int connSocketGetType(connection *conn) {
     return CONN_TYPE_SOCKET;
 }
 
+//先手动调用type->connect  connect内会设置connection的conn_handler。然后注册可写事件，并handler为type->ae_handler
+//对于socket类型的connection来说socket的ae_handler会调用connection->conn_handler
+
+//对于connectType结构体的理解：维护连接本身的行为（比如connect，accept，读和写），同时维护业务逻辑的入口：ae_handler
+//在业务逻辑之内可以通过connectType来对对应的socket来进行读写
 ConnectionType CT_Socket = {
     .ae_handler = connSocketEventHandler,
     .close = connSocketClose,
