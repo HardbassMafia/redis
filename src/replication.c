@@ -823,6 +823,10 @@ void syncCommand(client *c) {
     }
 
     /* CASE 1: BGSAVE is in progress, with disk target. */
+    // 当前实例(master) 有在进行 bgsave, 正在后台保存 RDB, 检查下是不是因为复制触发的
+    // 感觉是用在, master 已经在进行 bgsave 了, 后面再连过来的 slave, 触发全量复制的话
+    // 首先 bgsave 可以省去, 其次后来的 slave client 其实可以跟第一个 slave_client
+    // 可以用上它的输出缓冲区, 也就是都是从那个点开始积累的输出缓冲区, 可以复制缓冲区共用
     if (server.child_type == CHILD_TYPE_RDB &&
         server.rdb_child_type == RDB_CHILD_TYPE_DISK)
     {
@@ -1007,6 +1011,7 @@ void putSlaveOnline(client *slave) {
     slave->repl_put_online_on_ack = 0;
     slave->repl_ack_time = server.unixtime; /* Prevent false timeout. */
 
+    //如果slave只需要rdb 例如做冷备份的数据库
     if (slave->flags & CLIENT_REPL_RDBONLY) {
         serverLog(LL_NOTICE,
             "Close the connection with replica %s as RDB transfer is complete",
